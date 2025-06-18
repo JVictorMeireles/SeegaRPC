@@ -103,7 +103,7 @@ class SeegaServidor:
 
 #Define a uri como uma uri fixa para que não precise informar ao cliente a todo momento qual a nova uri
 servidor = SeegaServidor()
-daemon = Pyro5.api.Daemon(port=9090)
+daemon = Pyro5.api.Daemon(port=5555)
 uri = daemon.register(servidor, objectId="seega.servidor")
 print(f"Servidor ativo. URI: {uri}")
 daemon.requestLoop()

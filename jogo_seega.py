@@ -69,7 +69,7 @@ class JogoSeega:
 
 		#texto de informação do estado do jogo
 			#informa qual a cor do jogador
-		label_informando_cor=tk.Label(root,text=f"Você joga de {self.jogador1 if self.rede.is_servidor else self.jogador2}.",font=("Arial",16,"bold"))
+		label_informando_cor=tk.Label(root,text=f"Você joga de {self.cor_jogador}.",font=("Arial",16,"bold"))
 		label_informando_cor.pack(pady=10)
 			#informa o estado do jogo
 		self.label_status = tk.Label(root, text="", font=("Arial", 14))
@@ -348,9 +348,9 @@ class JogoSeega:
 		capturas_j2 = self.qtd_pecas_jogador_capturou[JOGADOR2]
 		if eu_desisto or adversario_desiste:
 			if eu_desisto == True:
-				vencedor = JOGADOR2 if self.rede.is_servidor else JOGADOR1
+				vencedor = JOGADOR2 if self.cor_jogador == JOGADOR1 else JOGADOR1
 			if adversario_desiste == True:
-				vencedor = JOGADOR1 if self.rede.is_servidor else JOGADOR2
+				vencedor = self.cor_jogador
 			self.popup_game_over(f"Jogador {vencedor} venceu por desistência do oponente!")
 		if capturas_j1 == PECAS_TOTAIS: #Jogador 1 capturou todas as peças
 			self.bloqueia = True
@@ -419,7 +419,7 @@ class JogoSeega:
 		return False
 	
 	def verifica_condicoes(self, pedir_encerrar, pedir_reiniciar, pedir_desistencia, aceitar_encerrar, aceitar_reiniciar, desligar):
-		oponente = JOGADOR2 if self.rede.cor_jogador == JOGADOR1 else JOGADOR1
+		oponente = JOGADOR2 if self.cor_jogador == JOGADOR1 else JOGADOR1
 		if aceitar_encerrar==False or aceitar_reiniciar==False:
 			self.quer_encerrar,self.quer_reiniciar = False, False
 			#TODO desbloquear botões?
@@ -472,15 +472,15 @@ class JogoSeega:
 
 	def bloquear_botoes_tabuleiro(self):
 		def bloqueia_tabuleiro():
-			bloqueia_servidor = self.jogador2 == self.jogador_atual and self.rede.is_servidor
-			bloqueia_cliente = self.jogador1 == self.jogador_atual and not self.rede.is_servidor
-			if bloqueia_servidor or bloqueia_cliente:
+			bloqueia_j1 = self.jogador2 == self.jogador_atual and (self.cor_jogador == JOGADOR1)
+			bloqueia_j2 = self.jogador1 == self.jogador_atual and not (self.cor_jogador == JOGADOR1)
+			if bloqueia_j1 or bloqueia_j2:
 				self.bloqueia = True
 				self.att_status(f"Esperando o jogador {self.jogador_atual} jogar...")
 		def libera_tabuleiro():
-			libera_servidor = self.jogador1 == self.jogador_atual and self.rede.is_servidor
-			libera_cliente = self.jogador2 == self.jogador_atual and not self.rede.is_servidor
-			if libera_servidor or libera_cliente:
+			libera_j1 = self.jogador1 == self.jogador_atual and (self.cor_jogador == JOGADOR1)
+			libera_cliente = self.jogador2 == self.jogador_atual and not (self.cor_jogador == JOGADOR1)
+			if libera_j1 or libera_cliente:
 				self.bloqueia = False
 				if self.fase_posicionamento == True:
 					self.att_status(f"Fase de posicionamento - Jogador: {self.jogador_atual}")
@@ -673,6 +673,12 @@ class GerenciadorRPC:
 				proxy.limpar_variaveis_de_controle(cor_jogador)
 				self.pedir_desistencia, self.aceitar_encerrar, self.aceitar_reiniciar = False, False, False
 				print("Variáveis de controle limpas.")
+
+	def enviar(self, mensagem_json):
+		# Envia a mensagem para o servidor
+		with p5.Proxy(self.uri) as proxy:
+			proxy.enviar_estado(mensagem_json)
+
 
 if __name__ == "__main__":
 	JogoSeega()
