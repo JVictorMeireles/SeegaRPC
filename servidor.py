@@ -11,7 +11,7 @@ class SeegaServidor:
     self.tempo_timeout = 3  # segundos para considerar um jogador inativo
     self.mensagem_a_enviar = None
     self.encerra_jogo,self.reiniciar,self.desistencia, self.desligar = False,False,False,False
-    self.aceitar_encerrar,self.aceitar_reinicio= None,None
+    self.aceitar_encerrar,self.aceitar_reinicio= False, False
     self.pode_limpar_variaveis_de_controle = [False,False]
     self.reiniciando_jogo=False
       
